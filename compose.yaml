@@ -12,7 +12,9 @@ services:
       - INFLUXDB_TOKEN=influxdb
       - INFLUXDB_ORG=api
       - INFLUXDB_BUCKET=temp_data
-      - CONFIG_PATH=$(pwd)/config.yaml
+      - CONFIG_PATH=/usr/src/config.yaml
+    volumes:
+      - ./config.yaml:/usr/src/config.yaml
     command: "uvicorn main:app --reload --host 0.0.0.0 --port 8001"
   temperature-exporter:
     depends_on: [db]
