@@ -1,0 +1,7 @@
+fastapi
+fastapi_utils
+uvicorn
+influxdb_client
+load_dotenv
+requests
+

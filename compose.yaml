@@ -1,0 +1,38 @@
+services:
+  metrics-collector:
+    depends_on: [db]
+    build:
+      context: ./metrics-collector
+      dockerfile: Dockerfile
+    ports:
+      - '8001:8001'
+    environment:
+      - EXPORTER_URL=http://temperature-exporter:8000
+      - INFLUXDB_URL=http://db:8086
+      - INFLUXDB_TOKEN=influxdb
+      - INFLUXDB_ORG=api
+      - INFLUXDB_BUCKET=temp_data
+    command: "uvicorn main:app --reload --host 0.0.0.0 --port 8001"
+  temperature-exporter:
+    depends_on: [db]
+    build:
+      context: ./temperature-exporter
+      dockerfile: Dockerfile
+    #privileged: true
+    ports:
+      - '8000:8000'
+    command: "uvicorn main:app --reload --host 0.0.0.0 --port 8000"
+    volumes:
+      - /sys/class/thermal/thermal_zone0:/sys/class/thermal/thermal_zone0:ro
+  db:
+    container_name: influxdb
+    image: influxdb:latest
+    ports:
+      - '8086:8086'
+    environment:
+      - DOCKER_INFLUXDB_INIT_MODE=setup
+      - DOCKER_INFLUXDB_INIT_USERNAME=influxdb
+      - DOCKER_INFLUXDB_INIT_PASSWORD=influxdb
+      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=influxdb
+      - DOCKER_INFLUXDB_INIT_ORG=api
+      - DOCKER_INFLUXDB_INIT_BUCKET=temp_data
