@@ -25,8 +25,11 @@ pip install -r temperature-exporter/requirements.txt
 source test.env
 ```
 ```
-uvicorn metrics-collector.main:app --reload --host 0.0.0.0 --port 8001
+docker compose up db -d
 ```
 ```
-uvicorn temperature-exporter.main:app --reload --host 0.0.0.0 --port 8001
+sh -c "cd temperature-exporter && uvicorn main:app --reload --host 0.0.0.0 --port 8000"
+```
+```
+sh -c "cd metrics-collector && uvicorn main:app --reload --host 0.0.0.0 --port 8001"
 ```
