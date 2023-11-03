@@ -22,7 +22,7 @@ pip install -r metrics-collector/requirements.txt
 pip install -r temperature-exporter/requirements.txt
 ```
 ```
-source metrics-collector/.env
+source test.env
 ```
 ```
 uvicorn metrics-collector.main:app --reload --host 0.0.0.0 --port 8001
