@@ -1,9 +1,7 @@
 from fastapi import FastAPI, Response
-
-import logging
 from prometheus_client import CollectorRegistry, Gauge, generate_latest, CONTENT_TYPE_LATEST
 from datetime import datetime
-import psutil
+import psutil,logging
 
 logger = logging.getLogger('uvicorn')
 
@@ -18,9 +16,11 @@ def fetch_metrics():
         else:
             for name, entries in temperatures.items():
                 for entry in entries:
+                    # センサー名と温度をメトリクスに追加
+                    CPU_TEMP.labels(sensor=name).set(entry.current)
                     logger.info(f"{name}: {entry.current}°C")
     except RuntimeError as e:
-        logger.error("エラーが発生しました: {e}")
+        logger.error(f"エラーが発生しました: {e}")
         return None
 
 # CollectorRegistryのインスタンスを作成
@@ -28,12 +28,13 @@ registry = CollectorRegistry()
 
 # Gaugeのインスタンスを作成し、registryに登録する
 if 'cpu_temperature' not in registry._names_to_collectors:
-    CPU_TEMP = Gauge('cpu_temperature', 'Temperature of the CPU', registry=registry)
+    # センサー名でラベルを追加
+    CPU_TEMP = Gauge('cpu_temperature', 'Temperature of the CPU', ['sensor'], registry=registry)
 
 @app.get("/metrics")
 def get_metrics():
     fetch_metrics() 
-    return Response(generate_latest(), media_type=CONTENT_TYPE_LATEST)
+    return Response(generate_latest(registry), media_type=CONTENT_TYPE_LATEST)
 
 if __name__ == "__main__":
     import uvicorn
